@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        textarea
+        {
+            border: 3px solid #cf0022;
+            border-radius: 10px;
+            background-color: #242424;
+            color: #cf0022;
+            font-size: 14px;
+        }
+        .blocks{background-color: #1a1a1a;}
+        p{font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif}
+    </style>
+</head>
+<body style="background-color: #131313; color: white;" >
+    <div class="blocks" id = "add-post" style="
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 18px;
+        border: 3px solid #cf0022;
+        border-radius: 10px;
+    "><br>
+        <p style="display: inline;color: #cf0022;">->USERNAME: </p>
+        <textarea name="name" id="name-field" cols="30" rows="1" 
+            maxlength="10" style="resize: none; "></textarea>
+        <br><p style="display: inline;color: #cf0022;">->POST TEXT: </p>
+        <textarea name="msg" id="msg-field" cols="30" rows="2" 
+            style="resize: none;"></textarea>
+        <button id = "msg-send" style = " 
+            border: 3px solid #cf0022;
+            border-radius: 10px;
+            font-size: 30px;
+            background-color: #242424;
+            color: #cf0022;
+        " onclick="serversend('msg-field', 'name-field')">Add Post</button>
+        <p id = "checker" style="
+            display:inline-block; 
+            font-size: 24px; 
+            color: #cf0022;
+        ">?</p>
+    </div><br>
+    <div id = "content" style = "
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 15px;
+    "></div>
+    <script>
+        var xhr = new XMLHttpRequest();
+        const content = document.getElementById('content'),
+            checker = document.getElementById('checker');
+
+        xhr.open("POST", '/refresh', true);
+        xhr.responseType = 'json';
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                var res = JSON.parse(xhr.response);
+                content.innerHTML = '';
+                for(var i = res.data.length - 1; i >= 0; i--)
+                {
+                    content.innerHTML += `
+                    <div class="blocks" style ="
+                    font-family: 'Courier New', Courier, monospace;
+                    font-size: 18px;
+                    border: 3px solid orange;
+                    border-radius: 10px;
+                    ">
+                        <h3 style = "color: orange">#${res.data[i].name}</h3>
+                        <p style = "color: #fc6603">-> ${res.data[i].text}</p>
+                    </div><br>`;
+                }
+            }
+        }
+        xhr.send(JSON.stringify({msg: 'server-call'})); 
+
+        function serversend(text, name)
+        {
+            let postdata = document.getElementById(text).value,
+                username = document.getElementById(name).value;
+            checker.innerText = 'Published';
+                
+            if(postdata.length < 6 && username.length < 4) return; 
+            
+            xhr.open("POST", '/add', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                name: username,
+                text: postdata
+            })); 
+        }
+    </script>
+</body>
+</html>
